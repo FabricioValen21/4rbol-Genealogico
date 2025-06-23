@@ -4,21 +4,31 @@ using namespace std;
 
 struct Miembro {
     int id;
+    //En este caso se usa -1 por que el miembro no tiene padre o madre en el árbol porque no se conoce, no se quiere registrar, o es un fundador.
+    int idPadre;              // NUEVO: ID del padre (-1 si no tiene)
+    int idMadre;              // NUEVO: ID de la madre (-1 si no tiene)
     char nombre[50];
     int generacion;
     char fechaNacimiento[20];
     char ocupacion[30];
 
-    Miembro(int _id, const char* _nombre, int _gen, const char* _fecha, const char* _ocup) {
+    //Se asigna el valor recibido al atributo interno del miembro.
+    Miembro(int _id, int _idPadre, int _idMadre, const char* _nombre, int _gen, 
+            const char* _fecha, const char* _ocup) {
         id = _id;
+        idPadre = _idPadre;
+        idMadre = _idMadre;
         generacion = _gen;
         strcpy(nombre, _nombre);
         strcpy(fechaNacimiento, _fecha);
         strcpy(ocupacion, _ocup);
     }
-
+    
+    //Se usa -1 porque aún no se ha registrado el padre o la madre. Es como decir "no tiene" o "todavía no se sabe".
     Miembro() {
         id = 0;
+        idPadre = -1;
+        idMadre = -1;
         generacion = 0;
         strcpy(nombre, "");
         strcpy(fechaNacimiento, "");
