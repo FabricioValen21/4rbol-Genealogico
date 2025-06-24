@@ -5,13 +5,14 @@ using namespace std;
 
 // Estructura para cada miembro del árbol genealógico
 struct Miembro {
-    int id;
-    int idPadre;
-    int idMadre;
-    char nombre[50];
-    int generacion;
-    char fechaNacimiento[20];
-    char ocupacion[30];
+    int id;                  // Identificador único del miembro
+    int idPadre;             // ID del padre
+    int idMadre;             // ID de la madre
+    char nombre[50];         // Nombre del miembro
+    int generacion;          // Número de generación a la que pertenece
+    char fechaNacimiento[20]; // Fecha de nacimiento (formato texto)
+    char ocupacion[30];      // Ocupación o profesión del miembro
+};
 
     Miembro(int _id, int _idPadre, int _idMadre, const char* _nombre, int _gen,
             const char* _fecha, const char* _ocup) {
