@@ -420,6 +420,7 @@ public:
         }
     }
 };
+
 // Inicializar el contador estático
 int ArbolGenealogico::contadorID = 1000;
 
@@ -436,34 +437,106 @@ void mostrarMenu() {
     cout << "9. Eliminar miembro" << endl;
     cout << "10. Cargar datos de ejemplo" << endl;
     cout << "0. Salir" << endl;
-    
+}
+
 int main() {
     ArbolGenealogico arbol;
     int opcion;
-
+    
+    cout << "=== SISTEMA DE ARBOL GENEALOGICO ABB ===" << endl;
+    cout << "=== Con Relaciones Familiares Reales ===" << endl;
+    
     do {
-        arbol.mostrarMenu();
+        mostrarMenu();
         cin >> opcion;
-
+        
         switch (opcion) {
             case 1: {
-                int id, gen;
+                int id, idPadre, idMadre, gen;
                 char nombre[50], fecha[20], ocup[30];
+                
                 cout << "\n=== INSERTAR MIEMBRO ===" << endl;
-                cout << "ID: "; cin >> id; cin.ignore();
-                cout << "Nombre: "; cin.getline(nombre, 50);
-                cout << "Generacion: "; cin >> gen; cin.ignore();
-                cout << "Fecha nacimiento: "; cin.getline(fecha, 20);
-                cout << "Ocupacion: "; cin.getline(ocup, 30);
-                arbol.insertarMiembro(id, nombre, gen, fecha, ocup);
+                cout << "ID: ";
+                cin >> id;
+                cout << "ID del padre (-1 si no tiene): ";
+                cin >> idPadre;
+                cout << "ID de la madre (-1 si no tiene): ";
+                cin >> idMadre;
+                cin.ignore();
+                cout << "Nombre: ";
+                cin.getline(nombre, 50);
+                cout << "Generacion (0 para calcular automaticamente): ";
+                cin >> gen;
+                cin.ignore();
+                cout << "Fecha nacimiento: ";
+                cin.getline(fecha, 20);
+                cout << "Ocupacion: ";
+                cin.getline(ocup, 30);
+                
+                arbol.insertarMiembro(id, idPadre, idMadre, nombre, gen, fecha, ocup);
                 break;
             }
-            default:
-                cout << "\nEsta opcion aun no esta implementada." << endl;
+            
+            case 2:
+                arbol.insertarHijo();
                 break;
+                
+            case 3: {
+                int id;
+                cout << "\nID a buscar: ";
+                cin >> id;
+                arbol.buscarMiembro(id);
+                break;
+            }
+            
+            case 4: {
+                int id;
+                cout << "\nID para ver ancestros: ";
+                cin >> id;
+                arbol.mostrarAncestros(id);
+                break;
+            }
+            
+            case 5: {
+                int id;
+                cout << "\nID para ver descendientes: ";
+                cin >> id;
+                arbol.mostrarDescendientes(id);
+                break;
+            }
+            
+            case 6:
+                arbol.verificarRelacionFamiliar();
+                break;
+                
+            case 7:
+                arbol.mostrarGenealogiaCompleta();
+                break;
+                
+            case 8:
+                arbol.mostrarArbolFamiliar();
+                break;
+                
+            case 9: {
+                int id;
+                cout << "\nID a eliminar: ";
+                cin >> id;
+                arbol.eliminarMiembro(id);
+                break;
+            }
+            
+            case 10:
+                cargarDatosEjemplo(arbol);
+                break;
+                
+            case 0:
+                cout << "\nGracias por usar el sistema!" << endl;
+                break;
+                
+            default:
+                cout << "\nOpcion no valida." << endl;
         }
-
-    } while (opcion != 8);
-
+    } while (opcion != 0);
+    
     return 0;
 }
