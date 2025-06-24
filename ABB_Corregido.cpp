@@ -12,18 +12,17 @@ struct Miembro {
     int generacion;          // Número de generación a la que pertenece
     char fechaNacimiento[20]; // Fecha de nacimiento (formato texto)
     char ocupacion[30];      // Ocupación o profesión del miembro
-};
-
+    
     Miembro(int _id, int _idPadre, int _idMadre, const char* _nombre, int _gen,
-            const char* _fecha, const char* _ocup) {
-        id = _id;
-        idPadre = _idPadre;
-        idMadre = _idMadre;
-        generacion = _gen;
-        strcpy(nombre, _nombre);
-        strcpy(fechaNacimiento, _fecha);
-        strcpy(ocupacion, _ocup);
-    }
+        const char* _fecha, const char* _ocup) {
+    id = _id;
+    idPadre = _idPadre;
+    idMadre = _idMadre;
+    generacion = _gen;
+    strcpy(nombre, _nombre);
+    strcpy(fechaNacimiento, _fecha);
+    strcpy(ocupacion, _ocup);
+    };
 
     Miembro() {
         id = 0;
@@ -35,6 +34,8 @@ struct Miembro {
         strcpy(ocupacion, "");
     }
 };
+
+
 
 // Nodo del árbol
 struct Nodo {
