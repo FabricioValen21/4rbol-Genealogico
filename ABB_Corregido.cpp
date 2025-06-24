@@ -1,5 +1,7 @@
 #include <iostream>
 #include <cstring>
+#include <queue>
+#include <vector>
 using namespace std;
 
 struct Miembro {
@@ -187,26 +189,235 @@ private:
 
 public:
     ArbolGenealogico() : raiz(nullptr) {
-        cout << "Arbol genealogico creado." << endl;
+        cout << "Sistema de Arbol Genealogico creado." << endl;
+        cout << "Nota: Use ID -1 cuando no conozca el padre o madre." << endl;
     }
-
-    void insertarMiembro(int id, const char* nombre, int gen, const char* fecha, const char* ocup) {
-        Miembro* nuevo = new Miembro(id, nombre, gen, fecha, ocup);
+    
+    int generarID() {
+        return ++contadorID;
+    }
+    
+    void insertarMiembro(int id, int idPadre, int idMadre, const char* nombre, 
+                        int gen, const char* fecha, const char* ocup) {
+        // Validar que los padres existan si se especifican
+        if (idPadre != -1 && buscar(raiz, idPadre) == nullptr) {
+            cout << "Error: El padre con ID " << idPadre << " no existe." << endl;
+            return;
+        }
+        if (idMadre != -1 && buscar(raiz, idMadre) == nullptr) {
+            cout << "Error: La madre con ID " << idMadre << " no existe." << endl;
+            return;
+        }
+        
+        // Calcular generación automáticamente si tiene padres
+        int generacionCalculada = gen;
+        if (idPadre != -1) {
+            Nodo* padre = buscar(raiz, idPadre);
+            if (padre) generacionCalculada = padre->miembro->generacion + 1;
+        } else if (idMadre != -1) {
+            Nodo* madre = buscar(raiz, idMadre);
+            if (madre) generacionCalculada = madre->miembro->generacion + 1;
+        }
+        
+        Miembro* nuevo = new Miembro(id, idPadre, idMadre, nombre, generacionCalculada, fecha, ocup);
         raiz = insertar(raiz, nuevo);
-        cout << "Miembro insertado correctamente." << endl;
+        cout << "Miembro insertado correctamente con ID: " << id << endl;
+        
+        if (id > contadorID) contadorID = id;  // Actualizar contador
     }
-
-    void mostrarMenu() {
-        cout << "\n===== MENU PRINCIPAL =====" << endl;
-        cout << "1. Insertar miembro" << endl;
-        cout << "2. Buscar miembro por ID" << endl;
-        cout << "3. Eliminar miembro" << endl;
-        cout << "4. Mostrar genealogia" << endl;
-        cout << "5. Mostrar jerarquia" << endl;
-        cout << "6. Mostrar descendientes" << endl;
-        cout << "7. Verificar pertenencia a rama" << endl;
-        cout << "8. Salir" << endl;
-        cout << "Seleccione una opcion (1-8): ";
+    
+    void insertarHijo() {
+        int idPadre, idMadre;
+        char nombre[50], fecha[20], ocup[30];
+        
+        cout << "\n=== INSERTAR HIJO/DESCENDIENTE ===" << endl;
+        cout << "ID del padre (-1 si no aplica): ";
+        cin >> idPadre;
+        cout << "ID de la madre (-1 si no aplica): ";
+        cin >> idMadre;
+        
+        if (idPadre == -1 && idMadre == -1) {
+            cout << "Error: Debe especificar al menos un padre o madre." << endl;
+            return;
+        }
+        
+        cin.ignore();
+        cout << "Nombre del hijo: ";
+        cin.getline(nombre, 50);
+        cout << "Fecha nacimiento: ";
+        cin.getline(fecha, 20);
+        cout << "Ocupacion: ";
+        cin.getline(ocup, 30);
+        
+        int nuevoID = generarID();
+        insertarMiembro(nuevoID, idPadre, idMadre, nombre, 0, fecha, ocup);
+    }
+    
+    void buscarMiembro(int id) {
+        Nodo* encontrado = buscar(raiz, id);
+        if (encontrado != nullptr) {
+            mostrarMiembroCompleto(encontrado->miembro);
+        } else {
+            cout << "Miembro con ID " << id << " no encontrado." << endl;
+        }
+    }
+    
+    void mostrarAncestros(int id) {
+        cout << "\n=== Ancestros de ID " << id << " ===" << endl;
+        Nodo* nodo = buscar(raiz, id);
+        if (nodo == nullptr) {
+            cout << "Miembro no encontrado." << endl;
+            return;
+        }
+        
+        cout << "Linea de ancestros:" << endl;
+        Miembro* actual = nodo->miembro;
+        int nivel = 0;
+        
+        while (actual != nullptr && (actual->idPadre != -1 || actual->idMadre != -1)) {
+            if (actual->idPadre != -1) {
+                Nodo* padre = buscar(raiz, actual->idPadre);
+                if (padre) {
+                    for (int i = 0; i <= nivel; i++) cout << "  ";
+                    cout << "Padre: " << padre->miembro->nombre << " (ID: " << actual->idPadre << ")" << endl;
+                }
+            }
+            if (actual->idMadre != -1) {
+                Nodo* madre = buscar(raiz, actual->idMadre);
+                if (madre) {
+                    for (int i = 0; i <= nivel; i++) cout << "  ";
+                    cout << "Madre: " << madre->miembro->nombre << " (ID: " << actual->idMadre << ")" << endl;
+                }
+            }
+            
+            // Continuar con el padre para la siguiente iteración
+            if (actual->idPadre != -1) {
+                Nodo* siguiente = buscar(raiz, actual->idPadre);
+                if (siguiente) {
+                    actual = siguiente->miembro;
+                    nivel++;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+    }
+    
+    void mostrarDescendientes(int id) {
+        cout << "\n=== Descendientes de ID " << id << " ===" << endl;
+        Nodo* nodo = buscar(raiz, id);
+        if (nodo == nullptr) {
+            cout << "Miembro no encontrado." << endl;
+            return;
+        }
+        
+        cout << "Mostrando: " << nodo->miembro->nombre << endl;
+        mostrarDescendientesRecursivo(id, 1);
+    }
+    
+    void mostrarDescendientesRecursivo(int idAncestro, int nivel) {
+        vector<Miembro*> hijos;
+        buscarHijos(raiz, idAncestro, hijos);
+        
+        for (Miembro* hijo : hijos) {
+            for (int i = 0; i < nivel; i++) cout << "  ";
+            cout << "└─ " << hijo->nombre << " (ID: " << hijo->id << ")" << endl;
+            mostrarDescendientesRecursivo(hijo->id, nivel + 1);
+        }
+    }
+    
+    void verificarRelacionFamiliar() {
+        int id1, id2;
+        cout << "\n=== Verificar Relacion Familiar ===" << endl;
+        cout << "ID del posible ancestro: ";
+        cin >> id1;
+        cout << "ID del posible descendiente: ";
+        cin >> id2;
+        
+        if (esDescendiente(id1, id2)) {
+            cout << "SI: " << id2 << " es descendiente de " << id1 << endl;
+        } else if (esDescendiente(id2, id1)) {
+            cout << "SI: " << id1 << " es descendiente de " << id2 << endl;
+        } else {
+            cout << "NO: No hay relacion directa de ancestro-descendiente." << endl;
+        }
+    }
+    
+    bool esDescendiente(int idAncestro, int idPosibleDesc) {
+        Nodo* nodo = buscar(raiz, idPosibleDesc);
+        if (nodo == nullptr) return false;
+        
+        Miembro* actual = nodo->miembro;
+        while (actual != nullptr && (actual->idPadre != -1 || actual->idMadre != -1)) {
+            if (actual->idPadre == idAncestro || actual->idMadre == idAncestro) {
+                return true;
+            }
+            
+            // Continuar buscando en los ancestros
+            if (actual->idPadre != -1) {
+                Nodo* padre = buscar(raiz, actual->idPadre);
+                if (padre) {
+                    actual = padre->miembro;
+                } else {
+                    break;
+                }
+            } else if (actual->idMadre != -1) {
+                Nodo* madre = buscar(raiz, actual->idMadre);
+                if (madre) {
+                    actual = madre->miembro;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        return false;
+    }
+    
+    void mostrarGenealogiaCompleta() {
+        cout << "\n=== Genealogia Completa (Orden por ID) ===" << endl;
+        if (raiz == nullptr) {
+            cout << "El arbol esta vacio." << endl;
+        } else {
+            recorridoInorden(raiz);
+        }
+    }
+    
+    void mostrarArbolFamiliar() {
+        cout << "\n=== Arbol Familiar Completo ===" << endl;
+        if (raiz == nullptr) {
+            cout << "El arbol esta vacio." << endl;
+            return;
+        }
+        
+        // Encontrar los miembros sin padres (raíces familiares)
+        vector<Miembro*> todos;
+        obtenerTodos(raiz, todos);
+        
+        for (Miembro* m : todos) {
+            if (m->idPadre == -1 && m->idMadre == -1) {
+                cout << "\nFamilia de: " << m->nombre << " (ID: " << m->id << ")" << endl;
+                mostrarDescendientesRecursivo(m->id, 1);
+            }
+        }
+    }
+    
+    void eliminarMiembro(int id) {
+        if (tieneHijos(id)) {
+            cout << "Error: No se puede eliminar porque tiene descendientes." << endl;
+            cout << "Elimine primero a los descendientes." << endl;
+            return;
+        }
+        
+        if (buscar(raiz, id) != nullptr) {
+            raiz = eliminar(raiz, id);
+            cout << "Miembro eliminado correctamente." << endl;
+        } else {
+            cout << "No se puede eliminar. ID no existe." << endl;
+        }
     }
 };
 
