@@ -420,7 +420,23 @@ public:
         }
     }
 };
+// Inicializar el contador estático
+int ArbolGenealogico::contadorID = 1000;
 
+void mostrarMenu() {
+    cout << "\n===== MENU PRINCIPAL =====" << endl;
+    cout << "1. Insertar miembro (con ID manual)" << endl;
+    cout << "2. Insertar hijo/descendiente (ID automatico)" << endl;
+    cout << "3. Buscar miembro por ID" << endl;
+    cout << "4. Mostrar ancestros de un miembro" << endl;
+    cout << "5. Mostrar descendientes de un miembro" << endl;
+    cout << "6. Verificar relacion familiar" << endl;
+    cout << "7. Mostrar genealogia completa" << endl;
+    cout << "8. Mostrar arbol familiar" << endl;
+    cout << "9. Eliminar miembro" << endl;
+    cout << "10. Cargar datos de ejemplo" << endl;
+    cout << "0. Salir" << endl;
+    
 int main() {
     ArbolGenealogico arbol;
     int opcion;
